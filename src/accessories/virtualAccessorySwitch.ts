@@ -135,6 +135,11 @@ export class Switch extends Accessory {
       }
     }
 
+    // Cancel any pending companion sensor delays when switch returns to default state
+    if (this.accessoryConfiguration.switch.hasCompanionSensor && On === this.defaultState) {
+      this.companionSensor!.cancelDelayedTrigger();
+    }
+
     this.saveState();
 
     if (this.accessoryConfiguration.switch.hasCompanionSensor) {

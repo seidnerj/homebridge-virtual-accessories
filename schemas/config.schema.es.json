@@ -138,7 +138,7 @@
                 { "title": "Puerta de Garaje", "enum": ["garagedoor"] },
                 { "title": "Calefactor/Aire Acondicionado", "enum": ["heatercooler"] },
                 { "title": "Humidificador/Deshumidificador", "enum": ["humidifierdehumidifier"] },
-                { "title": "Bombilla", "enum": ["lightbulb"] },
+                { "title": "Foco", "enum": ["lightbulb"] },
                 { "title": "Cerradura", "enum": ["lock"] },
                 { "title": "Micrófono", "enum": ["microphone"] },
                 { "title": "Sistema de Seguridad", "enum": ["securitysystem"] },
@@ -158,7 +158,7 @@
               "description": "El estado del accesorio se mantiene tras reiniciar Homebridge",
               "type": "boolean",
               "condition": {
-                "functionBody": "return ['airpurifier', 'door', 'fan', 'garagedoor', 'heatercooler', 'humidifierdehumidifier', 'lightbulb', 'lock', 'securitysystem', 'speaker', 'switch', 'television', 'thermostat', 'valve', 'window', 'windowcovering'].includes(model.devices[arrayIndices].accessoryType);"
+                "functionBody": "return ['airpurifier', 'door', 'fan', 'garagedoor', 'heatercooler', 'humidifierdehumidifier', 'lightbulb', 'lock', 'measurement', 'securitysystem', 'speaker', 'switch', 'television', 'thermostat', 'valve', 'window', 'windowcovering'].includes(model.devices[arrayIndices].accessoryType) || (['sensor'].includes(model.devices[arrayIndices].accessoryType) && model.devices[arrayIndices].sensor && model.devices[arrayIndices].sensor.trigger === 'webhook');"
               }
             },
             "airPurifier": {
@@ -562,7 +562,7 @@
               ]
             },
             "lightbulb": {
-              "title": "Bombilla",
+              "title": "Foco",
               "type": "object",
               "properties": {
                 "defaultState": {
@@ -577,8 +577,8 @@
                   "title": "Tipo *",
                   "type": "string",
                   "oneOf": [
-                    { "title": "Blanca", "enum": ["white"] },
-                    { "title": "Blanca Ambiente", "enum": ["ambiance"] },
+                    { "title": "Blanco", "enum": ["white"] },
+                    { "title": "Blanco Ambiente", "enum": ["ambiance"] },
                     { "title": "Color", "enum": ["color"] }
                   ]
                 },
@@ -704,7 +704,7 @@
               "type": "object",
               "properties": {
                 "armedModesTitle": {
-                  "title": "Modos Armados",
+                  "title": "Modos de Armado",
                   "description": "Modos del sistema de seguridad (Se requieren 'Fuera de Casa' y 'En Casa')",
                   "type": "object",
                   "properties": {}
@@ -778,7 +778,7 @@
                 },
                 "hasCompanionSensor": {
                   "title": "Tiene Sensor Complementario",
-                  "description": "El interruptor activa un sensor cuando cambia su estado",
+                  "description": "El interruptor activa un sensor cuando cambia su estado. Admite un retardo opcional para el estado activado.",
                   "type": "boolean"
                 },
                 "muteLogging": {
@@ -969,7 +969,7 @@
                   "type": "string",
                   "oneOf": [
                     { "title": "Contacto", "enum": ["contact"] },
-                    { "title": "Fuga (crítico)", "enum": ["leak"] },
+                    { "title": "Fuga (crítica)", "enum": ["leak"] },
                     { "title": "Movimiento", "enum": ["motion"] },
                     { "title": "Ocupación", "enum": ["occupancy"] },
                     { "title": "Dióxido de Carbono (crítico)", "enum": ["carbonDioxide"] },
@@ -982,7 +982,7 @@
                   "type": "string",
                   "oneOf": [
                     { "title": "Ping al Host", "enum": ["ping"] },
-                    { "title": "Cronograma Cron", "enum": ["cron"] },
+                    { "title": "Programación Cron", "enum": ["cron"] },
                     { "title": "Eventos Solares (Amanecer/Atardecer)", "enum": ["sunevents"] },
                     { "title": "Webhook", "enum": ["webhook"] },
                     { "title": "Disparador al Iniciar Homebridge", "enum": ["startup"] },
@@ -1174,7 +1174,7 @@
               ]
             },
             "companionSensor": {
-              "title": "Sensor Compañero",
+              "title": "Sensor Complementario",
               "type": "object",
               "properties": {
                 "name": {
@@ -1188,12 +1188,41 @@
                   "type": "string",
                   "oneOf": [
                     { "title": "Contacto", "enum": ["contact"] },
-                    { "title": "Fuga (crítico)", "enum": ["leak"] },
+                    { "title": "Fuga (crítica)", "enum": ["leak"] },
                     { "title": "Movimiento", "enum": ["motion"] },
                     { "title": "Ocupación", "enum": ["occupancy"] },
                     { "title": "Dióxido de Carbono (crítico)", "enum": ["carbonDioxide"] },
                     { "title": "Monóxido de Carbono (crítico)", "enum": ["carbonMonoxide"] },
                     { "title": "Humo (crítico)", "enum": ["smoke"] }
+                  ]
+                },
+                "delay": {
+                  "title": "Retardo de Activación",
+                  "description": "Tiempo de espera antes de activar el sensor (máximo 7 días)",
+                  "type": "object",
+                  "properties": {
+                    "days": { "$ref": "#/$defs/duration/properties/days" },
+                    "hours": {
+                      "$ref": "#/$defs/duration/properties/hours",
+                      "condition": {
+                        "functionBody": "return model.devices[arrayIndices].companionSensor && model.devices[arrayIndices].companionSensor.delay && model.devices[arrayIndices].companionSensor.delay.days < 7;"
+                      }
+                    },
+                    "minutes": {
+                      "$ref": "#/$defs/duration/properties/minutes",
+                      "condition": {
+                        "functionBody": "return model.devices[arrayIndices].companionSensor && model.devices[arrayIndices].companionSensor.delay && model.devices[arrayIndices].companionSensor.delay.days < 7;"
+                      }
+                    },
+                    "seconds": {
+                      "$ref": "#/$defs/duration/properties/seconds",
+                      "condition": {
+                        "functionBody": "return model.devices[arrayIndices].companionSensor && model.devices[arrayIndices].companionSensor.delay && model.devices[arrayIndices].companionSensor.delay.days < 7;"
+                      }
+                    }
+                  },
+                  "allOf": [
+                    { "$ref": "#/$defs/requireHoursMinutesSeconds" }
                   ]
                 }
               },
@@ -1202,12 +1231,12 @@
               }
             },
             "pingTrigger": {
-              "title": "Disparador Ping Host",
+              "title": "Disparador de Ping al Host",
               "type": "object",
               "properties": {
                 "host": {
                   "title": "Host *",
-                  "description": "Dirección IP (142.250.178.4) o nombre de dominio (www.google.com) del host a hacer ping",
+                  "description": "Dirección IP (142.250.178.4) o nombre de dominio (www.google.com) del host al que se hará ping",
                   "placeholder": "192.168.0.1",
                   "type": "string"
                 },
@@ -1218,8 +1247,8 @@
                   "minimum": 0
                 },
                 "interval": {
-                  "title": "Intervalo entres Pings",
-                  "description": "Intervalo entres pings en minutos - bajo para infraestructura crítica, más alto para dispositivos no críticos (predeterminado: 1 minuto)",
+                  "title": "Intervalo entre Pings",
+                  "description": "Intervalo entre pings en minutos - bajo para infraestructura crítica, más alto para dispositivos no críticos (predeterminado: 1 minuto)",
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 15
@@ -1246,7 +1275,7 @@
                   "pattern": "(^((\\*\\/)?([0-5]?[0-9])((,|-|\\/)([0-5]?[0-9]))*|\\*)\\s((\\*\\/)?((2[0-3]|1[0-9]|[0-9]|00))((,|-|\\/)(2[0-3]|1[0-9]|[0-9]|00))*|\\*)\\s((\\*\\/)?([1-9]|[12][0-9]|3[01])((,|-|\\/)([1-9]|[12][0-9]|3[01]))*|\\*)\\s((\\*\\/)?([1-9]|1[0-2])((,|-|\\/)([1-9]|1[0-2]))*|\\*|(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))\\s((\\*\\/)?[0-6]((,|-|\\/)[0-6])*|\\*|00|(sun|mon|tue|wed|thu|fri|sat))$)"
                 },
                 "zoneId": {
-                  "title": "Zona",
+                  "title": "ID de Zona",
                   "description": "ID de zona (https://es.wikipedia.org/wiki/Lista_de_zonas_horarias). Por defecto, la zona del sistema",
                   "placeholder": "America/Los_Angeles",
                   "type": "string",
@@ -1307,18 +1336,18 @@
                 },
                 "latitude": {
                   "title": "Latitud *",
-                  "description": "Latitud de su ubicación (https://www.latlong.net/)",
+                  "description": "Latitud de tu ubicación (https://www.latlong.net/)",
                   "type": "string",
                   "pattern": "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$"
                 },
                 "longitude": {
                   "title": "Longitud *",
-                  "description": "Longitud de su ubicación (https://www.latlong.net/)",
+                  "description": "Longitud de tu ubicación (https://www.latlong.net/)",
                   "type": "string",
                   "pattern": "^[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$"
                 },
                 "zoneId": {
-                  "title": "Zona",
+                  "title": "ID de Zona",
                   "description": "ID de zona (https://es.wikipedia.org/wiki/Lista_de_zonas_horarias). Por defecto, la zona del sistema",
                   "placeholder": "America/Los_Angeles",
                   "type": "string",
@@ -1376,12 +1405,12 @@
                     { "title": "Corea", "enum": ["Korea"] },
                     { "title": "Nueva Zelanda", "enum": ["New Zealand"] },
                     { "title": "Reino Unido", "enum": ["UK"] },
-                    { "title": "EE.UU", "enum": ["USA"] }
+                    { "title": "EE. UU.", "enum": ["USA"] }
                   ]
                 },
                 "storeLocation": {
                   "title": "Ubicación de la tienda *",
-                  "description": "Ubicación de la tienda (utilice el buscador de tiendas de IKEA)",
+                  "description": "Ubicación de la tienda (usa el buscador de tiendas de IKEA)",
                   "type": "string"
                 },
                 "itemName": {
@@ -1879,7 +1908,7 @@
       },
       "": {
         "title": " ",
-        "description": "Nota: Puede cambiar el orden de los accesorios arrastrándolos a una nueva ubicación en la lista. Haga clic en el botón «Guardar» para actualizar la configuración.",
+        "description": "Nota: Puedes cambiar el orden de los accesorios arrastrándolos a una nueva ubicación en la lista. Haz clic en el botón «Guardar» para actualizar la configuración.",
         "type": "object",
         "properties": {}
       }

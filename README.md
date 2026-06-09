@@ -136,7 +136,7 @@ Currently, these are the implemented virtual accessories:
     - **Plain old switches.** What it says on the label.
     - **Normally on/off switches.** The default state of the switch can be set to "on" or "off". This is also the default state when Homebridge restarts. If you pair it with a timer, the switch will revert back to the default state when the timer expires.
     - **Stateful switches.** The state of the switch persists across restarts of Homebridge. This includes timed switches.
-    - **Switches with companion sensors.** The switch will trigger a companion sensor when it changes state, generating an Apple Home-native notification in the Home app. Selecting a critical sensor type will allow notifications to bypass Focuses like "Do Not Disturb". This is just the easier way of implementing a switch triggered sensor.
+    - **Switches with companion sensors.** The switch will trigger a companion sensor when it changes state, generating an Apple Home-native notification in the Home app. Supports optional delay configuration where only the "triggered" state is delayed, while returning to "normal" is immediate. Selecting a critical sensor type will allow notifications to bypass Focuses like "Do Not Disturb". This is just the easier way of implementing a switch triggered sensor.
     - **Dimmer switches.** To create a dimmer switch use a virtual lightbulb.
     - **Timed switches.** This is a way to introduce timers into Apple Home. The switch will revert back to its default state when the timer expires. If the switch is stateful, the timer will be restored after a restart of Homebridge. While care is taken to restore the timer with the appropriate time correction, **absolute accuracy is not guaranteed and should not be expected**. The accuracy of the restored timer will be affected, among other things, by the hardware and software Homebridge is running on, the number of plugins installed, the order with which the plugins are restored, etc. (see note below)
 -   **Binary Sensor.** Allows you to create different types of virtual binary sensors. A binary sensor is a sensor that can have either a triggeredt state or a normal (state retuns a value open or closed). If Activity Notifications are enabled in the Home app, sensors will generate notifications when their state changes in response to a detected event. Some types of notifications, classified as `critical` by Apple Home, are allowed to bypass Focuses like `Do Not Disturb` and some are allowed to appear in CarPlay. Sensors can be activated by different triggers. Currently, the available triggers are:
@@ -144,7 +144,7 @@ Currently, these are the implemented virtual accessories:
     - **Homebridge Startup trigger.** Actvates the sensor whenever Homebridge (re)starts. The sensor resets after a brief delay.
     - **Host Ping trigger.** Actvates the sensor after a configurable number of failed attempts to ping a network host. The sensor resets when ping is successful.
     - **Sun Events trigger.** Activates the sensor when the selected event happens: sunrise, sunset, and golden hour (for the photographers among us). The sensor resets after a brief delay.
-    - **Switch trigger.** To create a switch triggered sensor, create a virtual switch accessory with a companion sensor. This is just the easier way of implementing a switch triggered sensor. A future version may provide the ability to create this pairing as a sensor with a switch trigger.
+    - **Switch trigger.** To create a switch triggered sensor, create a virtual switch accessory with a companion sensor. Supports optional delay configuration for triggering. This is just the easier way of implementing a switch triggered sensor. A future version may provide the ability to create this pairing as a sensor with a switch trigger.
     - **Webhook trigger.** Triggers the sensor via a [webhook call](#webhook-service-configuration). To reset the sensor, trigger it via another web call. If the sensor is stateful (`"accessoryIsStateful": true`), its state persists across restarts of Homebridge. This is useful for sensors that represent a longer-lived state, such as presence, which would otherwise reset when Homebridge restarts.
 -   **Measurement Sensor.** Allows you you to create a virtual measurement sensor. A measurement sensor returns a continuous value, rather than just open/closed. Its value is set via a [webhook call](#webhook-service-configuration). If the sensor is stateful (`"accessoryIsStateful": true`), its last value persists across restarts of Homebridge.
     - **Humidity Meter.** Allows you to create a virtual hygrometer that measures relative humidity. The humidity meter can be updated via a [webhook call](#webhook-service-configuration).
@@ -780,6 +780,45 @@ These are example configurations of the virtual accessories and provided for ref
     "platform": "VirtualAccessoriesForHomebridge"
 }
 ```
+
+#### Companion sensor with delayed triggering
+
+You can configure a delay before the companion sensor triggers when the switch moves away from its default state. The sensor will immediately return to normal when the switch returns to its default state, cancelling any pending delayed trigger.
+
+```json
+{
+    "name": "Virtual Accessories Platform",
+    "devices": [
+        {
+            "accessoryID": "1234567",
+            "accessoryName": "My Switch",
+            "accessoryType": "switch",
+            "accessoryIsStateful": false,
+            "switch": {
+                "defaultState": "off",
+                "hasCompanionSensor": true
+            },
+            "companionSensor": {
+                "name": "My Delayed Motion Sensor",
+                "type": "motion",
+                "delay": {
+                    "days": 0,
+                    "hours": 0,
+                    "minutes": 2,
+                    "seconds": 30
+                }
+            }
+        }
+    ],
+    "platform": "VirtualAccessoriesForHomebridge"
+}
+```
+
+**Delay behavior:**
+- **Triggered state**: Only delayed when moving away from default state (e.g., switch OFF→ON if default is OFF)
+- **Normal state**: Immediate when returning to default state, cancels any pending delayed trigger
+- **Maximum delay**: 7 days
+- **No delay configured**: Sensor triggers immediately (preserves existing behavior)
 
 ### Binary Sensor with ping trigger
 

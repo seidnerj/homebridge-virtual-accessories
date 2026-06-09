@@ -158,7 +158,7 @@
               "description": "Accessoire status overleeft Homebridge herstart",
               "type": "boolean",
               "condition": {
-                "functionBody": "return ['airpurifier', 'door', 'fan', 'garagedoor', 'heatercooler', 'humidifierdehumidifier', 'lightbulb', 'lock', 'securitysystem', 'speaker', 'switch', 'television', 'thermostat', 'valve', 'window', 'windowcovering'].includes(model.devices[arrayIndices].accessoryType);"
+                "functionBody": "return ['airpurifier', 'door', 'fan', 'garagedoor', 'heatercooler', 'humidifierdehumidifier', 'lightbulb', 'lock', 'measurement', 'securitysystem', 'speaker', 'switch', 'television', 'thermostat', 'valve', 'window', 'windowcovering'].includes(model.devices[arrayIndices].accessoryType) || (['sensor'].includes(model.devices[arrayIndices].accessoryType) && model.devices[arrayIndices].sensor && model.devices[arrayIndices].sensor.trigger === 'webhook');"
               }
             },
             "airPurifier": {
@@ -778,7 +778,7 @@
                 },
                 "hasCompanionSensor": {
                   "title": "Beschikt over een bijbehorende sensor",
-                  "description": "De schakelaar activeert een sensor wanneer de toestand ervan verandert",
+                  "description": "De schakelaar activeert een sensor wanneer de toestand ervan verandert. Ondersteunt een optionele vertraging voor de geactiveerde toestand.",
                   "type": "boolean"
                 },
                 "muteLogging": {
@@ -1194,6 +1194,35 @@
                     { "title": "Koolstofdioxide (kritiek)", "enum": ["carbonDioxide"] },
                     { "title": "Koolmonoxide (kritiek)", "enum": ["carbonMonoxide"] },
                     { "title": "Rook (kritiek)", "enum": ["smoke"] }
+                  ]
+                },
+                "delay": {
+                  "title": "Activeringsvertraging",
+                  "description": "Wachttijd voordat de sensor wordt geactiveerd (maximaal 7 dagen)",
+                  "type": "object",
+                  "properties": {
+                    "days": { "$ref": "#/$defs/duration/properties/days" },
+                    "hours": {
+                      "$ref": "#/$defs/duration/properties/hours",
+                      "condition": {
+                        "functionBody": "return model.devices[arrayIndices].companionSensor && model.devices[arrayIndices].companionSensor.delay && model.devices[arrayIndices].companionSensor.delay.days < 7;"
+                      }
+                    },
+                    "minutes": {
+                      "$ref": "#/$defs/duration/properties/minutes",
+                      "condition": {
+                        "functionBody": "return model.devices[arrayIndices].companionSensor && model.devices[arrayIndices].companionSensor.delay && model.devices[arrayIndices].companionSensor.delay.days < 7;"
+                      }
+                    },
+                    "seconds": {
+                      "$ref": "#/$defs/duration/properties/seconds",
+                      "condition": {
+                        "functionBody": "return model.devices[arrayIndices].companionSensor && model.devices[arrayIndices].companionSensor.delay && model.devices[arrayIndices].companionSensor.delay.days < 7;"
+                      }
+                    }
+                  },
+                  "allOf": [
+                    { "$ref": "#/$defs/requireHoursMinutesSeconds" }
                   ]
                 }
               },
