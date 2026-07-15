@@ -103,6 +103,7 @@
   },
   "scripts": {
     "build": "rimraf ./dist && tsc && npm test",
+    "prepare": "tsc",
     "test": "node --test test/*.test.js",
     "generate-schemas": "node scripts/generate-schemas.js",
     "generate-template": "node scripts/generate-template.js",
@@ -110,6 +111,12 @@
     "prepublishOnly": "npm run lint && npm run build",
     "watch": "npm run build && npm link && nodemon"
   },
+  "files": [
+    "dist",
+    "assets",
+    "schemas",
+    "config.schema.json"
+  ],
   "dependencies": {
     "@homebridge/node-icmp-ping": "^1.0.1",
     "@js-joda/core": "^6.3.0",
