@@ -2,7 +2,7 @@
   "name": "homebridge-virtual-accessories",
   "displayName": "Virtual Accessories for Homebridge",
   "type": "module",
-  "version": "3.17.6-b.1",
+  "version": "3.17.6-b.2",
   "private": true,
   "description": "Virtual HomeKit accessories for Homebridge.",
   "author": "justjam2023 (Renzo Zanelli - renzo.zanelli6@gmail.com)",
