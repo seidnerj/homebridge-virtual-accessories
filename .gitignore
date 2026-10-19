@@ -121,3 +121,7 @@ dist
 
 # Webstorm
 .idea
+
+# Local tooling (Claude Code, direnv)
+.claude/
+.envrc
